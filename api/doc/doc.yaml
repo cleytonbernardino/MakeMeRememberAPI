@@ -1,0 +1,323 @@
+openapi: 3.0.3
+info:
+  title: Make Me Remember
+  description: |-
+    API para o aplicativo MAKE ME REMEMBER, não deve ser usada comerciamente e nem em produção,
+    apenas para fins de estudo e aprendizado. JAMAIS COLOQUE INFORMAÇÕES SENSIVEIS NESTA API.
+
+    Esta API foi criado como projeto Semestral da faculdade UNINOVE, para a disciplina de
+    COMPUTACAO APLICADA, ministrada pelo professor Edson M. de Souza.
+
+    O token de acesso é gerado pelo endpoint /api/login/ deve ser passado em todas as requisições
+    no header da requisição, com o nome de Authorization e o valor Bearer <token>
+
+    ESTA API ESTÁ EM FAZE DE DESENVOLVIMENTO E PODE APRESENTAR FALHAS.
+
+    Alguns links
+    - [Repositorio](https://github.com/cleytonbernardino/MakeMeRememberAPI)
+    - [Faça Download desta aplicação](https://codeload.github.com/cleytonbernardino/MakeMeRememberAPI/zip/refs/heads/main)
+  
+  version: 1.2.0
+servers:
+  - url: http://localhost:8000
+tags:
+  - name: Tasks
+    description: Endpoits para manipulação de tarefas
+  
+  - name: User
+    description: Endpoits para manipulação de usuarios
+
+paths:
+  /api/task/add/:
+    post:
+      security:
+        - Bearer: []
+      tags:
+        - Tasks
+      summary: Adiciona uma nova tarefa
+      description: Adiciona uma nova tarefa
+      operationId: insertList
+      requestBody:
+        description: Adiciona uma nova tarefa ao banco de dados. Caso a priority seja invalida, será atribuido o valor 1, date e time são opcionais caso não sejam passados sera atribuido a data e hora atual.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListObjNoID'
+
+        required: true
+      responses:
+        '201':
+          description: Tarefa adicionado com sucesso
+        '400':
+          description: Erro ao criar a tarefa
+
+  /api/tasks/:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - Tasks
+      summary: Retorna todas as tarefas do usuario
+      description: Retorna todas as tarefas do usuario, pode ser paçado um parametro para filtrar as tarefas por concluidas ou não, se nada for passado sera retornado as comcluidas e não concluidas.
+      operationId: getAllTask
+      parameters:
+        - in: query
+          name: completed
+          description: Filtra as tarefas por concluidas ou não
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Retorna todas as tarefas, caso não exista é retornada um objeto vazio.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListObj'
+
+  /api/task/{id}/:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - Tasks
+      summary: Retorna uma tarefa
+      description: Retorna uma tarefa, passando um id como parametro
+      operationId: getOneTask
+      parameters:
+        - in: path
+          name: id
+          description: Id da tarefa
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Retorna a tarefa solicitada, caso ela não exita é retornado um objeto "Nenhum item com o ID foi encontrado".
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListObj'
+
+    put:
+      security:
+        - Bearer: []
+      tags:
+        - Tasks
+      summary: Atualiza uma tarefa
+      description: Atualiza uma tarefa, passando titulo como paramentro
+      operationId: updateList
+      parameters:
+        - in: path
+          name: id
+          description: Id da tarefa
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Atualiza uma tarefa no banco de dados. Date e time são opcionais caso não sejam passados sera atribuido a data e hora atual.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListObjNoID'
+        required: true
+      responses:
+        '200':
+          description: Tarefa atualizada com sucesso
+        '400':
+          description: Não foi possível atualizar a tarefa
+
+    delete:
+      security:
+        - Bearer: []
+      tags:
+        - Tasks
+      summary: Deleta uma tarefa
+      description: Deleta uma tarefa, passando o id como parametro
+      operationId: deleteTask
+      parameters:
+        - in: path
+          name: id
+          description: Id da tarefa
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Tarefa apagada com sucesso'
+        '404':
+          description: 'Tarefa não encontrada'
+
+
+  /api/login/:
+    post:
+      tags:
+        - User
+      summary: Realiza o login
+      description: Recebe um usuario e senha e retorna um token SE valido
+      operationId: login
+      requestBody:
+        description: Recebe um usuario e senha e retorna um token SE valido
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserForm'
+        required: true
+      responses:
+        '200':
+          description: Tokens de acesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: <token>
+                  username:
+                    type: string
+                    example: admin
+
+        '400':
+          description: Usuário ou senha inválida
+
+  /api/register/:
+    post:
+      tags:
+        - User
+      summary: Realiza o cadastro
+      description: Realiza o cadastro de um novo usuario, a senha deve conter no minimo 8 caracteres.
+      operationId: register
+      requestBody:
+        description: Realiza o cadastro de um novo usuario, no Banco de dados
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserForm'
+        required: true
+      responses:
+        '201':
+          description: Usuario cadastrado com sucesso
+        '400':
+          description: Usuario invalido
+
+  /api/change-password/:
+    put:
+      security:
+          - Bearer: []
+      tags:
+        - User
+      summary: Altera a senha
+      description: Faz a alteração da senha do usuário
+      operationId: changePassword
+      requestBody:
+        description: Faz a alteração da senha do usuário
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: new_password
+        required: true
+      responses:
+        '200':
+          description: Senha alterada com sucesso
+        '400':
+          description: Senha invalida
+
+components:
+  schemas:
+  
+    ListObj:
+      type: object
+      properties:
+
+        id:
+          type: integer
+          example: 123
+
+        title:
+          type: string
+          example: Titulo da tarefa
+        
+        content:
+          type: string
+          example: Conteudo da tarefa
+
+        tag:
+          type: string
+          example: Tag da terefa
+
+        priority:
+          type: integer
+          example: 1
+
+        url:
+          type: string
+          example: https://www.google.com.br
+
+        completed:
+          type: boolean
+          example: false
+
+        dateTime:
+          type: string
+          example: 12/11/2023 12:00
+
+    ListObjNoID:
+      type: object
+      properties:
+
+        title:
+          type: string
+          example: Titulo da tarefa
+        
+        content:
+          type: string
+          example: Conteudo da tarefa
+
+        tag:
+          type: string
+          example: Tag da terefa
+
+        priority:
+          type: integer
+          example: 1
+
+        url:
+          type: string
+          example: https://www.google.com.br
+
+        completed:
+          type: boolean
+          example: false
+
+        date:
+          type: string
+          example: 12/11/2023
+
+        time:
+          type: string
+          example: '12:00'
+      
+    UserForm:
+      type: object
+      properties:
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+          example: admin
+
+  securitySchemes:
+    Bearer:
+      in: header
+      type: apiKey
+      name: Authorization
+      description: >-
+        Insira seu token ele deve conter o prefixo:  Bearer

@@ -1,0 +1,19 @@
+SECRET_KEY = string
+
+# 1 = True, 0 = False
+DEBUG = int
+
+# Values must be separated by commas
+ALLOWED_HOSTS = string Ex. site.com,site2.com
+
+# Database configs
+
+DB_NAME = string
+
+DB_USER = string
+
+DB_PASSWORD = string
+
+DB_HOST = string
+
+DB_PORT = int
